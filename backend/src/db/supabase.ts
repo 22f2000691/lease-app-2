@@ -2,7 +2,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Env } from '../types';
 
 export function getSupabaseClient(env: Env): SupabaseClient {
-  const url = env.SUPABASE_URL || '';
+  let url = (env.SUPABASE_URL || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
   const key = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY || '';
 
   if (!url || !key || url.includes('your-project') || key.includes('your-supabase')) {

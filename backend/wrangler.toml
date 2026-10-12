@@ -4,6 +4,6 @@ compatibility_date = "2024-10-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-SUPABASE_URL = "https://your-project.supabase.co"
-SUPABASE_ANON_KEY = "your-supabase-anon-key"
+SUPABASE_URL = "https://cdluuaoqbuuwnctbpbrj.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkbHV1YW9xYnV1d25jdGJwYnJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3ODczNzgsImV4cCI6MjEwNzM2MzM3OH0.-KxQl22z8WLsQAyFJXZo_Jgw3tnR_ArPhBwX8_XHidw"
 # SUPABASE_SERVICE_ROLE_KEY can be set via `wrangler secret put SUPABASE_SERVICE_ROLE_KEY`
