@@ -31,6 +31,17 @@
         />
       </div>
 
+      <div class="form-group">
+        <label for="tenantEmail">Tenant Account Email (For Tenant Portal)</label>
+        <input
+          id="tenantEmail"
+          v-model="form.tenant_email"
+          type="email"
+          class="input-control"
+          placeholder="e.g. tenant@domain.com"
+        />
+      </div>
+
       <div class="form-group full-width">
         <label for="tenantAddress">Tenant Permanent Address *</label>
         <textarea
@@ -224,6 +235,7 @@ const form = ref({
   property_id: '',
   shop_name: '',
   tenant_name: '',
+  tenant_email: '',
   tenant_mobile: '',
   tenant_address: '',
   start_date: getTodayISO(),
@@ -244,6 +256,7 @@ watch(
           property_id: l.property_id,
           shop_name: l.shop_name,
           tenant_name: l.tenant_name,
+          tenant_email: l.tenant_email || '',
           tenant_mobile: l.tenant_mobile || '',
           tenant_address: l.tenant_address,
           start_date: l.start_date,
@@ -265,6 +278,7 @@ watch(
           property_id: store.properties[0]?.id || '',
           shop_name: '',
           tenant_name: '',
+          tenant_email: '',
           tenant_mobile: '',
           tenant_address: '',
           start_date: start.toISOString().slice(0, 10),

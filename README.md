@@ -58,8 +58,15 @@ Engineered with:
    - Live days-left countdown chips.
    - Priority renewal contact cards with direct call links and one-click contract extension modal.
 
-5. **Dual-Mode (Zero-Friction Local Testing & Cloud Ready)**:
-   - Includes **Instant Local Demo Mode** (pre-seeded with realistic Guwahati commercial data) so anyone can launch and test the frontend immediately without setting up accounts.
+5. **Multi-User Authentication & Role-Based Access Control (RBAC)**:
+   - Separate experiences for **Landlords** and **Tenants**.
+   - **Landlord Experience**: Full administrative control over properties, leases, annual escalations, invoice generation, and revenue charts.
+   - **Tenant Self-Service Portal (`/tenant-portal`)**: Dedicated portal for tenants to view current lease details, monthly rent, compounding increment rates, payment history, download lease agreements, and view landlord emergency contact details.
+   - **Automatic Tenant Linking**: When a tenant registers or logs in, leases matching their email address automatically link to their account.
+   - **Zero-Friction 1-Click Demo Logins**: Test both roles instantly with the "Demo Landlord" and "Demo Tenant" buttons on the login screen.
+
+6. **Dual-Mode (Zero-Friction Local Testing & Cloud Ready)**:
+   - Includes **Instant Local Demo Mode** (pre-seeded with realistic commercial data) so anyone can launch and test the frontend immediately without setting up accounts.
    - Seamlessly toggle to **Live Cloudflare + Supabase Mode** via header badge or environment variables.
 
 ---

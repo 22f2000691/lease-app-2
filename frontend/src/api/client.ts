@@ -1,5 +1,5 @@
-import { Property, Lease, RentRecord, DashboardSummary } from '../types';
-import { INITIAL_PROPERTIES, INITIAL_LEASES, INITIAL_RENTS } from './mockData';
+import { Property, Lease, RentRecord, DashboardSummary, UserProfile, TenantDashboardData } from '../types';
+import { INITIAL_PROPERTIES, INITIAL_LEASES, INITIAL_RENTS, DEMO_LANDLORD, DEMO_TENANT } from './mockData';
 import {
   calculateCurrentRent,
   getLeaseStatus,
@@ -67,6 +67,15 @@ const localMock = new LocalMockStorage();
 const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 function getApiUrl(path: string): string {
   return API_BASE ? `${API_BASE}${path}` : path;
+}
+
+function getAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem('leaseTracker_token');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
 }
 
 // Detect or override API mode: 'live' | 'mock'
@@ -421,5 +430,107 @@ export const ApiClient = {
 
     const leases = await this.getLeases();
     return leases.filter(l => l.status === 'Renewal Due');
+  },
+
+  // ================= AUTH =================
+  async login(email: string, password: string): Promise<{ profile: UserProfile; token: string }> {
+    if (currentMode === 'live') {
+      const res = await fetch(getApiUrl('/api/auth/login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+      return { profile: json.data.profile, token: json.data.session.access_token };
+    }
+
+    // Mock Login
+    if (email.toLowerCase().includes('tenant') || email.toLowerCase().includes('priyanka')) {
+      return { profile: DEMO_TENANT, token: 'mock-tenant-jwt-token' };
+    }
+    return {
+      profile: {
+        id: 'mock-landlord-id',
+        email,
+        full_name: email.split('@')[0],
+        role: 'landlord'
+      },
+      token: 'mock-landlord-jwt-token'
+    };
+  },
+
+  async register(data: { email: string; password: string; full_name: string; phone?: string; role: 'landlord' | 'tenant' }): Promise<{ profile: UserProfile; token: string }> {
+    if (currentMode === 'live') {
+      const res = await fetch(getApiUrl('/api/auth/register'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+      return { profile: json.data.profile, token: json.data.session?.access_token || 'registered' };
+    }
+
+    const profile: UserProfile = {
+      id: 'mock-user-' + Date.now(),
+      email: data.email,
+      full_name: data.full_name,
+      phone: data.phone,
+      role: data.role
+    };
+    return { profile, token: 'mock-jwt-token-' + Date.now() };
+  },
+
+  async getMe(): Promise<UserProfile | null> {
+    if (currentMode === 'live') {
+      try {
+        const res = await fetch(getApiUrl('/api/auth/me'), {
+          headers: getAuthHeaders()
+        });
+        const json = await res.json();
+        if (!json.success) return null;
+        return json.data;
+      } catch {
+        return null;
+      }
+    }
+    const raw = localStorage.getItem('leaseTracker_profile');
+    return raw ? JSON.parse(raw) : null;
+  },
+
+  // ================= TENANT PORTAL =================
+  async getTenantDashboard(): Promise<TenantDashboardData> {
+    if (currentMode === 'live') {
+      const res = await fetch(getApiUrl('/api/tenant/dashboard'), {
+        headers: getAuthHeaders()
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+      return json.data;
+    }
+
+    // Mock tenant dashboard: find lease for DEMO_TENANT
+    const rawProfile = localStorage.getItem('leaseTracker_profile');
+    const profile: UserProfile = rawProfile ? JSON.parse(rawProfile) : DEMO_TENANT;
+    const leases = await this.getLeases();
+    const myLease = leases.find(l => l.tenant_email === profile.email || l.tenant_user_id === profile.id) || leases[1] || null;
+
+    const currentMonth = getCurrentMonthISO();
+    const rents = myLease ? (await this.getRents(currentMonth)).filter(r => r.lease_id === myLease.id) : [];
+    const currentMonthInvoice = rents.find(r => r.month === currentMonth) || null;
+
+    return {
+      profile,
+      lease: myLease,
+      rents,
+      daysRemaining: myLease?.days_remaining || 0,
+      currentMonthInvoice,
+      landlordContact: {
+        name: 'Rajiv Goswami (Estate Manager)',
+        phone: '+91 98640 11223',
+        email: 'management@citycentre.in'
+      }
+    };
   }
 };

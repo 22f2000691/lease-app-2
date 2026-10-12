@@ -1,5 +1,10 @@
 <template>
-  <div class="app-layout">
+  <div v-if="isAuthRoute" class="auth-layout">
+    <router-view />
+    <ToastContainer />
+  </div>
+
+  <div v-else class="app-layout">
     <Sidebar />
 
     <main class="main-content">
@@ -13,17 +18,18 @@
       </div>
     </main>
 
-    <!-- Global Modals & Notifications -->
-    <PropertyModal />
-    <LeaseModal />
+    <!-- Global Modals & Notifications for Landlords -->
+    <PropertyModal v-if="authStore.isLandlord" />
+    <LeaseModal v-if="authStore.isLandlord" />
     <ToastContainer />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useLeaseStore } from './stores/leaseStore';
+import { useAuthStore } from './stores/authStore';
 
 import Sidebar from './components/Sidebar.vue';
 import HeaderBar from './components/HeaderBar.vue';
@@ -33,13 +39,26 @@ import ToastContainer from './components/ToastContainer.vue';
 
 const route = useRoute();
 const store = useLeaseStore();
+const authStore = useAuthStore();
+
+const isAuthRoute = computed(() => {
+  return route.name === 'login' || route.name === 'register' || route.meta.guestOnly === true;
+});
 
 onMounted(async () => {
+  await authStore.initAuth();
   await store.checkConnectivity();
-  await store.refreshAll();
+  if (authStore.isLandlord) {
+    await store.refreshAll();
+  }
 });
 </script>
 
 <style scoped>
-/* App layout styles defined in main.css */
+.auth-layout {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
 </style>

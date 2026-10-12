@@ -78,6 +78,7 @@ leasesRoute.post('/', async (c) => {
       property_id,
       shop_name,
       tenant_name,
+      tenant_email,
       tenant_mobile,
       tenant_address,
       start_date,
@@ -99,12 +100,27 @@ leasesRoute.post('/', async (c) => {
     }
 
     const supabase = getSupabaseClient(c.env);
+
+    let tenant_user_id: string | null = null;
+    if (tenant_email) {
+      const { data: matchedProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('email', tenant_email.trim())
+        .maybeSingle();
+      if (matchedProfile) {
+        tenant_user_id = matchedProfile.id;
+      }
+    }
+
     const { data, error } = await supabase
       .from('leases')
       .insert([{
         property_id,
         shop_name: shop_name.trim(),
         tenant_name: tenant_name.trim(),
+        tenant_email: tenant_email ? tenant_email.trim() : null,
+        tenant_user_id: tenant_user_id,
         tenant_mobile: tenant_mobile ? tenant_mobile.trim() : null,
         tenant_address: tenant_address.trim(),
         start_date,
@@ -138,6 +154,7 @@ leasesRoute.put('/:id', async (c) => {
       property_id,
       shop_name,
       tenant_name,
+      tenant_email,
       tenant_mobile,
       tenant_address,
       start_date,
@@ -155,12 +172,29 @@ leasesRoute.put('/:id', async (c) => {
     }
 
     const supabase = getSupabaseClient(c.env);
+
+    let tenant_user_id: string | null = undefined as any;
+    if (tenant_email !== undefined) {
+      if (tenant_email) {
+        const { data: matchedProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .ilike('email', tenant_email.trim())
+          .maybeSingle();
+        tenant_user_id = matchedProfile ? matchedProfile.id : null;
+      } else {
+        tenant_user_id = null;
+      }
+    }
+
     const { data, error } = await supabase
       .from('leases')
       .update({
         ...(property_id && { property_id }),
         ...(shop_name && { shop_name: shop_name.trim() }),
         ...(tenant_name && { tenant_name: tenant_name.trim() }),
+        ...(tenant_email !== undefined && { tenant_email: tenant_email ? tenant_email.trim() : null }),
+        ...(tenant_user_id !== undefined && { tenant_user_id }),
         ...(tenant_mobile !== undefined && { tenant_mobile: tenant_mobile ? tenant_mobile.trim() : null }),
         ...(tenant_address && { tenant_address: tenant_address.trim() }),
         ...(start_date && { start_date }),

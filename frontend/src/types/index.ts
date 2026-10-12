@@ -1,8 +1,21 @@
+export type UserRole = 'landlord' | 'tenant';
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  phone?: string | null;
+  role: UserRole;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Property {
   id: string;
   name: string;
   address: string;
   total_units: number;
+  landlord_id?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -12,6 +25,8 @@ export interface Lease {
   property_id: string;
   shop_name: string;
   tenant_name: string;
+  tenant_email?: string | null;
+  tenant_user_id?: string | null;
   tenant_mobile?: string | null;
   tenant_address: string;
   start_date: string;
@@ -53,6 +68,19 @@ export interface DashboardSummary {
   currentMonth: string;
   recentLeases: Lease[];
   urgentRenewals: Lease[];
+}
+
+export interface TenantDashboardData {
+  profile: UserProfile;
+  lease: Lease | null;
+  rents: RentRecord[];
+  daysRemaining: number;
+  currentMonthInvoice: RentRecord | null;
+  landlordContact?: {
+    name?: string;
+    phone?: string;
+    email?: string;
+  };
 }
 
 export interface ToastMessage {

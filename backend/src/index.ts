@@ -9,6 +9,8 @@ import leasesRoute from './routes/leases';
 import rentsRoute from './routes/rents';
 import dashboardRoute from './routes/dashboard';
 import renewalsRoute from './routes/renewals';
+import authRoute from './routes/auth';
+import tenantRoute from './routes/tenant';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -47,6 +49,8 @@ app.route('/api/leases', leasesRoute);
 app.route('/api/rents', rentsRoute);
 app.route('/api/dashboard', dashboardRoute);
 app.route('/api/renewals', renewalsRoute);
+app.route('/api/auth', authRoute);
+app.route('/api/tenant', tenantRoute);
 
 // 404 Not Found Handler
 app.notFound((c) => {

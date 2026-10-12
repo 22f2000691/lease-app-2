@@ -1,4 +1,4 @@
-import { Property, Lease, RentRecord } from '../types';
+import { Property, Lease, RentRecord, UserProfile } from '../types';
 import { getTodayISO, getCurrentMonthISO } from '../utils/formatters';
 
 const today = getTodayISO();
@@ -35,12 +35,29 @@ const expiredDate = new Date();
 expiredDate.setDate(expiredDate.getDate() - 14);
 const expiredDateISO = expiredDate.toISOString().slice(0, 10);
 
+export const DEMO_LANDLORD: UserProfile = {
+  id: 'user-landlord-1',
+  email: 'landlord@demo.com',
+  full_name: 'Rajiv Goswami (Property Owner)',
+  phone: '+91 98640 11223',
+  role: 'landlord'
+};
+
+export const DEMO_TENANT: UserProfile = {
+  id: 'user-tenant-1',
+  email: 'priyanka@cafemocha.com',
+  full_name: 'Priyanka Das (Cafe Mocha)',
+  phone: '+91 98540 12345',
+  role: 'tenant'
+};
+
 export const INITIAL_LEASES: Lease[] = [
   {
     id: 'lease-1',
     property_id: 'prop-1',
     shop_name: 'Shop 101 - Apex Electronics',
     tenant_name: 'Rajesh Sharma',
+    tenant_email: 'rajesh@apex.com',
     tenant_mobile: '+91 98765 43210',
     tenant_address: 'House 42, Christian Basti, Guwahati',
     start_date: '2024-01-01',
@@ -57,6 +74,8 @@ export const INITIAL_LEASES: Lease[] = [
     property_id: 'prop-1',
     shop_name: 'Unit 204 - Cafe Mocha',
     tenant_name: 'Priyanka Das',
+    tenant_email: 'priyanka@cafemocha.com',
+    tenant_user_id: 'user-tenant-1',
     tenant_mobile: '+91 98540 12345',
     tenant_address: 'Boruah Enclave, Ulubari, Guwahati',
     start_date: '2023-11-01',
