@@ -1,6 +1,6 @@
 # LeaseTracker Pro - Commercial Property & Rent Management System
 
-A high-performance, modern full-stack application for managing commercial properties, retail shops, tenant lease registers, compounding annual rent increments, 30-day renewal alerts, and monthly rent collections.
+A high-performance, modern full-stack application for managing commercial properties, retail shops, tenant lease registers, compounding annual rent increments, 60-day renewal alerts, and monthly rent collections.
 
 Engineered with:
 - **Frontend**: **Vue 3** (Composition API, `<script setup>`, TypeScript, Vite, Pinia, Vue Router, Lucide Icons) – Ready for **Vercel**
@@ -45,7 +45,7 @@ Engineered with:
 2. **Tenant & Lease Register**:
    - Tenant contact details with one-click direct telephone dial shortcut.
    - Compounding annual escalation calculation: `base_rent * (1 + increment%)^years`.
-   - Automatic status calculation: `Active`, `Renewal Due` (≤ 30 days left), or `Expired`.
+   - Automatic status calculation: `Active`, `Renewal Due` (≤ 60 days left), or `Expired`.
    - Agreement attachment uploads (PDFs, KYC documents, images).
 
 3. **Monthly Rent Collection (Accounts Receivable)**:
@@ -54,7 +54,7 @@ Engineered with:
    - Dynamic `Overdue` detection when unpaid past due date.
    - Instant "Mark Paid" / "Undo Payment" toggles with collection progress visualization.
 
-4. **Dedicated 30-Day Renewal Reminder Center**:
+4. **Dedicated 60-Day Renewal Reminder Center**:
    - Live days-left countdown chips.
    - Priority renewal contact cards with direct call links and one-click contract extension modal.
 

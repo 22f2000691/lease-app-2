@@ -5,7 +5,7 @@ import { enrichLease } from '../utils/leaseCalc';
 
 const renewalsRoute = new Hono<{ Bindings: Env }>();
 
-// GET /api/renewals - List all leases with renewals due (within 30 days)
+// GET /api/renewals - List all leases with renewals due (within 60 days)
 renewalsRoute.get('/', async (c) => {
   try {
     const supabase = getSupabaseClient(c.env);

@@ -33,7 +33,7 @@
           >
             <option value="">All Statuses</option>
             <option value="Active">Active Only</option>
-            <option value="Renewal Due">Renewal Due (Next 30 Days)</option>
+            <option value="Renewal Due">Renewal Due (Next 60 Days)</option>
             <option value="Expired">Expired</option>
           </select>
         </div>

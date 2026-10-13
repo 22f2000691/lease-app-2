@@ -14,7 +14,7 @@
       <StatCard
         label="Upcoming Renewals"
         :value="dashboardData?.upcomingRenewalsCount || 0"
-        subtext="Expiring within 30 days"
+        subtext="Expiring within 60 days"
         :icon="ClockAlert"
         icon-bg="rgba(245, 158, 11, 0.12)"
         icon-color="#d97706"
@@ -124,7 +124,7 @@
       <div class="card-glass content-card">
         <div class="card-title-row">
           <div>
-            <h3>30-Day Renewal Alerts</h3>
+            <h3>60-Day Renewal Alerts</h3>
             <p>Expiring contracts requiring renewal discussion</p>
           </div>
           <router-link to="/renewals" class="view-all-link">View All →</router-link>
@@ -158,7 +158,7 @@
           <div v-if="urgentRenewals.length === 0" class="empty-state alert-empty">
             <CheckCircle2 :size="32" class="empty-icon" />
             <p>All leases are in good standing.</p>
-            <small>No contracts expiring within the next 30 days.</small>
+            <small>No contracts expiring within the next 60 days.</small>
           </div>
         </div>
       </div>

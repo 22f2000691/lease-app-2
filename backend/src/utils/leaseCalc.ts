@@ -39,7 +39,7 @@ export function calculateCurrentRent(
 }
 
 /**
- * Determines lease status: 'Active', 'Renewal Due' (within 30 days of end date), or 'Expired'.
+ * Determines lease status: 'Active', 'Renewal Due' (within 60 days of end date), or 'Expired'.
  */
 export function getLeaseStatus(lease: { manual_status?: string | null; end_date: string }): { status: 'Active' | 'Renewal Due' | 'Expired'; daysRemaining: number } {
   const today = getTodayISO();
@@ -55,7 +55,7 @@ export function getLeaseStatus(lease: { manual_status?: string | null; end_date:
   if (daysRemaining < 0) {
     return { status: 'Expired', daysRemaining };
   }
-  if (daysRemaining <= 30) {
+  if (daysRemaining <= 60) {
     return { status: 'Renewal Due', daysRemaining };
   }
   return { status: 'Active', daysRemaining };

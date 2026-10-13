@@ -72,7 +72,7 @@ export function getLeaseStatus(lease: { manual_status?: string | null; end_date:
   if (daysRemaining < 0) {
     return { status: 'Expired', daysRemaining };
   }
-  if (daysRemaining <= 30) {
+  if (daysRemaining <= 60) {
     return { status: 'Renewal Due', daysRemaining };
   }
   return { status: 'Active', daysRemaining };

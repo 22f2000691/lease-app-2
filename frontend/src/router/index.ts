@@ -97,7 +97,7 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
       role: 'landlord',
       title: 'Upcoming Renewals',
-      subtitle: 'Automatic 30-day alerts for expiring commercial tenant leases.'
+      subtitle: 'Automatic 60-day alerts for expiring commercial tenant leases.'
     }
   },
   {

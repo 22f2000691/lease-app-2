@@ -3,8 +3,8 @@
     <div class="card-glass renewals-card">
       <div class="card-toolbar">
         <div>
-          <h2>Upcoming Lease Renewals (30-Day Reminder)</h2>
-          <p>Tenants whose commercial lease agreements expire within the next 30 days</p>
+          <h2>Upcoming Lease Renewals (60-Day Reminder)</h2>
+          <p>Tenants whose commercial lease agreements expire within the next 60 days</p>
         </div>
         <span class="due-count-pill">{{ renewalDueLeases.length }} Leases Requiring Action</span>
       </div>
@@ -67,7 +67,7 @@
         <div v-if="renewalDueLeases.length === 0" class="empty-renewals-box">
           <CheckCircle2 :size="48" class="check-icon" />
           <h3>All leases are up to date!</h3>
-          <p>There are no commercial leases terminating within the next 30 calendar days.</p>
+          <p>There are no commercial leases terminating within the next 60 calendar days.</p>
         </div>
       </div>
     </div>
