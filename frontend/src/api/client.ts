@@ -469,7 +469,11 @@ export const ApiClient = {
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
-      return { profile: json.data.profile, token: json.data.session?.access_token || 'registered' };
+      if (json.data?.session?.access_token) {
+        return { profile: json.data.profile, token: json.data.session.access_token };
+      }
+      // Fallback: log in with credentials to obtain active token
+      return await this.login(data.email, data.password);
     }
 
     const profile: UserProfile = {

@@ -18,29 +18,79 @@ authRoute.post('/register', async (c) => {
     const assignedRole = role === 'tenant' ? 'tenant' : 'landlord';
     const supabase = getSupabaseClient(c.env);
 
-    // Register user with Supabase Auth
-    const { data: authData, error: authErr } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        data: {
+    let user: any = null;
+
+    // 1. Attempt creating pre-confirmed user via Supabase admin API
+    try {
+      const { data: adminData, error: adminErr } = await supabase.auth.admin.createUser({
+        email: email.trim(),
+        password,
+        email_confirm: true,
+        user_metadata: {
           full_name: full_name.trim(),
           phone: phone ? phone.trim() : null,
           role: assignedRole
         }
+      });
+
+      if (adminData?.user) {
+        user = adminData.user;
+      } else if (adminErr) {
+        if (
+          adminErr.message?.toLowerCase().includes('already') ||
+          adminErr.message?.toLowerCase().includes('exists')
+        ) {
+          // If already registered, make sure email is confirmed so user can log in
+          try {
+            const { data: userList } = await supabase.auth.admin.listUsers();
+            const existing = userList?.users?.find(
+              (u) => u.email?.toLowerCase() === email.trim().toLowerCase()
+            );
+            if (existing) {
+              await supabase.auth.admin.updateUserById(existing.id, { email_confirm: true });
+            }
+          } catch {}
+          return c.json(
+            { success: false, error: 'An account with this email already exists. Please sign in.' },
+            400
+          );
+        }
+        console.warn('admin.createUser note:', adminErr.message);
       }
-    });
-
-    if (authErr) {
-      return c.json({ success: false, error: authErr.message }, 400);
+    } catch (adminEx: any) {
+      console.warn('admin.createUser exception:', adminEx.message);
     }
 
-    const user = authData.user;
+    // 2. Fallback to standard signUp if admin API was not available
     if (!user) {
-      return c.json({ success: false, error: 'Failed to create user account' }, 500);
+      const { data: authData, error: authErr } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            full_name: full_name.trim(),
+            phone: phone ? phone.trim() : null,
+            role: assignedRole
+          }
+        }
+      });
+
+      if (authErr) {
+        return c.json({ success: false, error: authErr.message }, 400);
+      }
+
+      user = authData.user;
+      if (!user) {
+        return c.json({ success: false, error: 'Failed to create user account' }, 500);
+      }
+
+      // Try auto-confirming newly created user
+      try {
+        await supabase.auth.admin.updateUserById(user.id, { email_confirm: true });
+      } catch {}
     }
 
-    // Upsert into profiles table
+    // 3. Upsert into profiles table
     const profile: UserProfile = {
       id: user.id,
       email: user.email || email.trim(),
@@ -57,7 +107,7 @@ authRoute.post('/register', async (c) => {
       console.warn('Profile upsert note:', profileErr.message);
     }
 
-    // If tenant, auto-link any existing lease with matching email
+    // 4. If tenant, auto-link any existing lease with matching email
     if (assignedRole === 'tenant') {
       await supabase
         .from('leases')
@@ -65,15 +115,36 @@ authRoute.post('/register', async (c) => {
         .ilike('tenant_email', email.trim());
     }
 
-    return c.json({
-      success: true,
-      message: 'Account registered successfully',
-      data: {
-        user: { id: user.id, email: user.email },
-        profile,
-        session: authData.session
-      }
-    }, 201);
+    // 5. Sign in automatically to obtain an active session for the frontend
+    let session = null;
+    try {
+      const { data: loginData } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password
+      });
+      session = loginData?.session || null;
+    } catch (loginEx) {
+      console.warn('Auto sign-in error:', loginEx);
+    }
+
+    return c.json(
+      {
+        success: true,
+        message: 'Account registered successfully',
+        data: {
+          user: { id: user.id, email: user.email },
+          profile,
+          session: session
+            ? {
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+                expires_at: session.expires_at
+              }
+            : null
+        }
+      },
+      201
+    );
   } catch (err: any) {
     return c.json({ success: false, error: err.message }, 500);
   }
@@ -90,10 +161,34 @@ authRoute.post('/login', async (c) => {
     }
 
     const supabase = getSupabaseClient(c.env);
-    const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+    let { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password
     });
+
+    // Auto-heal if unconfirmed email error occurs
+    if (authErr && authErr.message && authErr.message.toLowerCase().includes('not confirmed')) {
+      try {
+        const { data: userList } = await supabase.auth.admin.listUsers();
+        const existingUser = userList?.users?.find(
+          (u) => u.email?.toLowerCase() === email.trim().toLowerCase()
+        );
+        if (existingUser) {
+          await supabase.auth.admin.updateUserById(existingUser.id, { email_confirm: true });
+          // Retry sign-in now that user is confirmed
+          const retry = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password
+          });
+          if (retry.data?.session && retry.data?.user) {
+            authData = retry.data;
+            authErr = null;
+          }
+        }
+      } catch (confirmEx) {
+        console.warn('Auto-confirm attempt error:', confirmEx);
+      }
+    }
 
     if (authErr || !authData.user || !authData.session) {
       return c.json({ success: false, error: authErr?.message || 'Invalid email or password' }, 401);

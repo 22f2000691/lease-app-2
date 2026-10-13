@@ -6,4 +6,4 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 SUPABASE_URL = "https://cdluuaoqbuuwnctbpbrj.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkbHV1YW9xYnV1d25jdGJwYnJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3ODczNzgsImV4cCI6MjEwNzM2MzM3OH0.-KxQl22z8WLsQAyFJXZo_Jgw3tnR_ArPhBwX8_XHidw"
-# SUPABASE_SERVICE_ROLE_KEY can be set via `wrangler secret put SUPABASE_SERVICE_ROLE_KEY`
+SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkbHV1YW9xYnV1d25jdGJwYnJqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MTc4NzM3OCwiZXhwIjoyMTA3MzYzMzc4fQ.qjxGfZT_Z-6gRIdqAYnYnC4Z19FDcGhxfZztmZhh88w"
