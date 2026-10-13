@@ -36,6 +36,11 @@ export const useAuthStore = defineStore('auth', () => {
     profile.value = newProfile;
     localStorage.setItem(STORAGE_KEYS.TOKEN, newToken);
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(newProfile));
+    if (newToken.startsWith('demo-')) {
+      ApiClient.setMode('mock');
+    } else {
+      ApiClient.setMode('live');
+    }
   }
 
   function clearSession() {
@@ -77,24 +82,30 @@ export const useAuthStore = defineStore('auth', () => {
 
   function logout() {
     clearSession();
+    ApiClient.setMode('live');
     notify.addToast('Signed out successfully', 'info');
   }
 
-  // Quick 1-click Demo Switchers
+  // Quick 1-click Demo Switchers (Operate strictly in isolated mock sandbox)
   function loginAsDemo(role: 'landlord' | 'tenant') {
     if (role === 'landlord') {
       setSession('demo-landlord-token', DEMO_LANDLORD);
-      notify.addToast('Signed in as Demo Landlord', 'success');
+      notify.addToast('Signed in as Demo Landlord (Local Demo Sandbox)', 'success');
       return DEMO_LANDLORD;
     } else {
       setSession('demo-tenant-token', DEMO_TENANT);
-      notify.addToast('Signed in as Demo Tenant', 'success');
+      notify.addToast('Signed in as Demo Tenant (Local Demo Sandbox)', 'success');
       return DEMO_TENANT;
     }
   }
 
   async function initAuth() {
     if (token.value) {
+      if (token.value.startsWith('demo-')) {
+        ApiClient.setMode('mock');
+      } else {
+        ApiClient.setMode('live');
+      }
       try {
         const freshProfile = await ApiClient.getMe();
         if (freshProfile) {

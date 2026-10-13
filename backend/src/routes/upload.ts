@@ -1,8 +1,11 @@
 import { Hono } from 'hono';
 import { Env } from '../types';
 import { getSupabaseClient } from '../db/supabase';
+import { authMiddleware, AuthContext } from '../middleware/auth';
 
-const uploadRoute = new Hono<{ Bindings: Env }>();
+const uploadRoute = new Hono<{ Bindings: Env; Variables: AuthContext }>();
+
+uploadRoute.use('*', authMiddleware);
 
 uploadRoute.post('/', async (c) => {
   try {

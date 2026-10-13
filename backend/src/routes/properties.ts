@@ -1,16 +1,22 @@
 import { Hono } from 'hono';
 import { Env, Property } from '../types';
 import { getSupabaseClient } from '../db/supabase';
+import { authMiddleware, AuthContext } from '../middleware/auth';
 
-const propertiesRoute = new Hono<{ Bindings: Env }>();
+const propertiesRoute = new Hono<{ Bindings: Env; Variables: AuthContext }>();
 
-// GET /api/properties - List all properties
+// All property operations require authentication
+propertiesRoute.use('*', authMiddleware);
+
+// GET /api/properties - List properties belonging to the authenticated landlord
 propertiesRoute.get('/', async (c) => {
   try {
+    const user = c.get('user');
     const supabase = getSupabaseClient(c.env);
     const { data, error } = await supabase
       .from('properties')
       .select('*')
+      .eq('landlord_id', user.id)
       .order('name', { ascending: true });
 
     if (error) {
@@ -23,19 +29,21 @@ propertiesRoute.get('/', async (c) => {
   }
 });
 
-// GET /api/properties/:id - Get single property
+// GET /api/properties/:id - Get single property owned by the landlord
 propertiesRoute.get('/:id', async (c) => {
   try {
+    const user = c.get('user');
     const id = c.req.param('id');
     const supabase = getSupabaseClient(c.env);
     const { data, error } = await supabase
       .from('properties')
       .select('*')
       .eq('id', id)
+      .eq('landlord_id', user.id)
       .single();
 
     if (error || !data) {
-      return c.json({ success: false, error: error?.message || 'Property not found' }, 404);
+      return c.json({ success: false, error: 'Property not found or access denied' }, 404);
     }
 
     return c.json({ success: true, data });
@@ -44,9 +52,10 @@ propertiesRoute.get('/:id', async (c) => {
   }
 });
 
-// POST /api/properties - Create property
+// POST /api/properties - Create property assigned to this landlord
 propertiesRoute.post('/', async (c) => {
   try {
+    const user = c.get('user');
     const body = await c.req.json();
     const { name, address, total_units } = body;
 
@@ -60,7 +69,8 @@ propertiesRoute.post('/', async (c) => {
       .insert([{
         name: name.trim(),
         address: address.trim(),
-        total_units: Number(total_units || 0)
+        total_units: Number(total_units || 0),
+        landlord_id: user.id
       }])
       .select()
       .single();
@@ -75,9 +85,10 @@ propertiesRoute.post('/', async (c) => {
   }
 });
 
-// PUT /api/properties/:id - Update property
+// PUT /api/properties/:id - Update property owned by this landlord
 propertiesRoute.put('/:id', async (c) => {
   try {
+    const user = c.get('user');
     const id = c.req.param('id');
     const body = await c.req.json();
     const { name, address, total_units } = body;
@@ -86,16 +97,17 @@ propertiesRoute.put('/:id', async (c) => {
     const { data, error } = await supabase
       .from('properties')
       .update({
-        name: name?.trim(),
-        address: address?.trim(),
-        total_units: Number(total_units || 0)
+        ...(name && { name: name.trim() }),
+        ...(address && { address: address.trim() }),
+        ...(total_units !== undefined && { total_units: Number(total_units || 0) })
       })
       .eq('id', id)
+      .eq('landlord_id', user.id)
       .select()
       .single();
 
-    if (error) {
-      return c.json({ success: false, error: error.message }, 500);
+    if (error || !data) {
+      return c.json({ success: false, error: error?.message || 'Property not found or access denied' }, 404);
     }
 
     return c.json({ success: true, data });
@@ -104,11 +116,24 @@ propertiesRoute.put('/:id', async (c) => {
   }
 });
 
-// DELETE /api/properties/:id - Delete property (with dependency check)
+// DELETE /api/properties/:id - Delete property (with dependency and ownership check)
 propertiesRoute.delete('/:id', async (c) => {
   try {
+    const user = c.get('user');
     const id = c.req.param('id');
     const supabase = getSupabaseClient(c.env);
+
+    // Verify ownership first
+    const { data: prop } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('id', id)
+      .eq('landlord_id', user.id)
+      .maybeSingle();
+
+    if (!prop) {
+      return c.json({ success: false, error: 'Property not found or access denied' }, 404);
+    }
 
     // Check if property is currently referenced by any leases
     const { count, error: countErr } = await supabase
@@ -123,14 +148,15 @@ propertiesRoute.delete('/:id', async (c) => {
     if (count && count > 0) {
       return c.json({
         success: false,
-        error: `Cannot delete property: ${count} lease(s) are currently attached to it. Please reassign or delete the leases first.`
+        error: `Cannot delete property: ${count} lease(s) are currently attached to it. Please delete the attached leases first.`
       }, 400);
     }
 
     const { error } = await supabase
       .from('properties')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('landlord_id', user.id);
 
     if (error) {
       return c.json({ success: false, error: error.message }, 500);

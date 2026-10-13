@@ -2,23 +2,48 @@ import { Hono } from 'hono';
 import { Env, Lease } from '../types';
 import { getSupabaseClient } from '../db/supabase';
 import { enrichLease } from '../utils/leaseCalc';
+import { authMiddleware, AuthContext } from '../middleware/auth';
 
-const leasesRoute = new Hono<{ Bindings: Env }>();
+const leasesRoute = new Hono<{ Bindings: Env; Variables: AuthContext }>();
 
-// GET /api/leases - List all leases with calculated metrics and search/filter
+// All lease operations require authenticated landlord
+leasesRoute.use('*', authMiddleware);
+
+// GET /api/leases - List all leases with calculated metrics and search/filter for this landlord
 leasesRoute.get('/', async (c) => {
   try {
+    const user = c.get('user');
     const supabase = getSupabaseClient(c.env);
     const search = c.req.query('search')?.toLowerCase();
     const statusFilter = c.req.query('status'); // 'Active' | 'Renewal Due' | 'Expired'
     const propertyId = c.req.query('property_id');
 
+    // 1. Fetch properties belonging to this landlord
+    const { data: userProps, error: propErr } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('landlord_id', user.id);
+
+    if (propErr) {
+      return c.json({ success: false, error: propErr.message }, 500);
+    }
+
+    const propIds = (userProps || []).map((p: any) => p.id);
+    if (propIds.length === 0) {
+      return c.json({ success: true, data: [] });
+    }
+
+    // 2. Fetch leases under these properties
     let query = supabase
       .from('leases')
       .select('*, property:properties(id, name, address)')
+      .in('property_id', propIds)
       .order('end_date', { ascending: true });
 
     if (propertyId) {
+      if (!propIds.includes(propertyId)) {
+        return c.json({ success: true, data: [] });
+      }
       query = query.eq('property_id', propertyId);
     }
 
@@ -51,17 +76,18 @@ leasesRoute.get('/', async (c) => {
 // GET /api/leases/:id - Get single lease with details
 leasesRoute.get('/:id', async (c) => {
   try {
+    const user = c.get('user');
     const id = c.req.param('id');
     const supabase = getSupabaseClient(c.env);
 
     const { data, error } = await supabase
       .from('leases')
-      .select('*, property:properties(id, name, address)')
+      .select('*, property:properties(id, name, address, landlord_id)')
       .eq('id', id)
       .single();
 
-    if (error || !data) {
-      return c.json({ success: false, error: error?.message || 'Lease not found' }, 404);
+    if (error || !data || (data.property as any)?.landlord_id !== user.id) {
+      return c.json({ success: false, error: 'Lease not found or access denied' }, 404);
     }
 
     return c.json({ success: true, data: enrichLease(data) });
@@ -70,9 +96,10 @@ leasesRoute.get('/:id', async (c) => {
   }
 });
 
-// POST /api/leases - Create new lease
+// POST /api/leases - Create new lease under landlord's property
 leasesRoute.post('/', async (c) => {
   try {
+    const user = c.get('user');
     const body = await c.req.json();
     const {
       property_id,
@@ -102,6 +129,18 @@ leasesRoute.post('/', async (c) => {
     }
 
     const supabase = getSupabaseClient(c.env);
+
+    // Verify the target property belongs to this landlord
+    const { data: prop } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('id', property_id)
+      .eq('landlord_id', user.id)
+      .maybeSingle();
+
+    if (!prop) {
+      return c.json({ success: false, error: 'Property not found or you do not have permission to attach leases to it.' }, 403);
+    }
 
     let tenant_user_id: string | null = null;
     if (tenant_email) {
@@ -168,9 +207,10 @@ leasesRoute.post('/', async (c) => {
   }
 });
 
-// PUT /api/leases/:id - Update lease
+// PUT /api/leases/:id - Update lease owned by this landlord
 leasesRoute.put('/:id', async (c) => {
   try {
+    const user = c.get('user');
     const id = c.req.param('id');
     const body = await c.req.json();
     const {
@@ -197,6 +237,31 @@ leasesRoute.put('/:id', async (c) => {
     }
 
     const supabase = getSupabaseClient(c.env);
+
+    // Verify existing lease belongs to landlord
+    const { data: existingLease } = await supabase
+      .from('leases')
+      .select('id, property_id, property:properties(landlord_id)')
+      .eq('id', id)
+      .single();
+
+    if (!existingLease || (existingLease.property as any)?.landlord_id !== user.id) {
+      return c.json({ success: false, error: 'Lease not found or access denied' }, 403);
+    }
+
+    // If changing property_id, verify new property belongs to landlord
+    if (property_id && property_id !== existingLease.property_id) {
+      const { data: targetProp } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('id', property_id)
+        .eq('landlord_id', user.id)
+        .maybeSingle();
+
+      if (!targetProp) {
+        return c.json({ success: false, error: 'Selected property does not belong to your account.' }, 403);
+      }
+    }
 
     let tenant_user_id: string | null = undefined as any;
     if (tenant_email !== undefined) {
@@ -262,11 +327,23 @@ leasesRoute.put('/:id', async (c) => {
   }
 });
 
-// DELETE /api/leases/:id - Delete lease
+// DELETE /api/leases/:id - Delete lease owned by this landlord
 leasesRoute.delete('/:id', async (c) => {
   try {
+    const user = c.get('user');
     const id = c.req.param('id');
     const supabase = getSupabaseClient(c.env);
+
+    // Verify ownership before deleting
+    const { data: existingLease } = await supabase
+      .from('leases')
+      .select('id, property_id, property:properties(landlord_id)')
+      .eq('id', id)
+      .single();
+
+    if (!existingLease || (existingLease.property as any)?.landlord_id !== user.id) {
+      return c.json({ success: false, error: 'Lease not found or access denied' }, 403);
+    }
 
     const { error } = await supabase
       .from('leases')
@@ -278,46 +355,6 @@ leasesRoute.delete('/:id', async (c) => {
     }
 
     return c.json({ success: true, message: 'Lease deleted successfully' });
-  } catch (err: any) {
-    return c.json({ success: false, error: err.message }, 500);
-  }
-});
-
-// POST /api/leases/upload-signed-url - Generate presigned upload URL for Supabase storage
-leasesRoute.post('/upload-signed-url', async (c) => {
-  try {
-    const body = await c.req.json();
-    const { filename } = body;
-    if (!filename) {
-      return c.json({ success: false, error: 'Filename is required' }, 400);
-    }
-
-    const supabase = getSupabaseClient(c.env);
-    const cleanName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const storagePath = `agreements/${Date.now()}_${cleanName}`;
-
-    const { data, error } = await supabase.storage
-      .from('lease-documents')
-      .createSignedUploadUrl(storagePath);
-
-    if (error) {
-      return c.json({ success: false, error: error.message }, 500);
-    }
-
-    // Also get public URL
-    const { data: pubUrl } = supabase.storage
-      .from('lease-documents')
-      .getPublicUrl(storagePath);
-
-    return c.json({
-      success: true,
-      data: {
-        signedUrl: data.signedUrl,
-        path: storagePath,
-        token: data.token,
-        publicUrl: pubUrl.publicUrl
-      }
-    });
   } catch (err: any) {
     return c.json({ success: false, error: err.message }, 500);
   }

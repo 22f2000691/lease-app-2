@@ -104,7 +104,9 @@ export const ApiClient = {
   // ================= PROPERTIES =================
   async getProperties(): Promise<Property[]> {
     if (currentMode === 'live') {
-      const res = await fetch(getApiUrl('/api/properties'));
+      const res = await fetch(getApiUrl('/api/properties'), {
+        headers: getAuthHeaders()
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
       return json.data;
@@ -116,7 +118,7 @@ export const ApiClient = {
     if (currentMode === 'live') {
       const res = await fetch(getApiUrl('/api/properties'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(property)
       });
       const json = await res.json();
@@ -138,7 +140,7 @@ export const ApiClient = {
     if (currentMode === 'live') {
       const res = await fetch(getApiUrl(`/api/properties/${id}`), {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updates)
       });
       const json = await res.json();
@@ -155,7 +157,10 @@ export const ApiClient = {
 
   async deleteProperty(id: string): Promise<void> {
     if (currentMode === 'live') {
-      const res = await fetch(getApiUrl(`/api/properties/${id}`), { method: 'DELETE' });
+      const res = await fetch(getApiUrl(`/api/properties/${id}`), {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
       return;
@@ -174,7 +179,9 @@ export const ApiClient = {
       const params = new URLSearchParams();
       if (filter?.status) params.set('status', filter.status);
       if (filter?.search) params.set('search', filter.search);
-      const res = await fetch(getApiUrl(`/api/leases?${params.toString()}`));
+      const res = await fetch(getApiUrl(`/api/leases?${params.toString()}`), {
+        headers: getAuthHeaders()
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
       return json.data;
@@ -216,7 +223,7 @@ export const ApiClient = {
     if (currentMode === 'live') {
       const res = await fetch(getApiUrl('/api/leases'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(lease)
       });
       const json = await res.json();
@@ -247,7 +254,7 @@ export const ApiClient = {
     if (currentMode === 'live') {
       const res = await fetch(getApiUrl(`/api/leases/${id}`), {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(updates)
       });
       const json = await res.json();
@@ -273,7 +280,10 @@ export const ApiClient = {
 
   async deleteLease(id: string): Promise<void> {
     if (currentMode === 'live') {
-      const res = await fetch(getApiUrl(`/api/leases/${id}`), { method: 'DELETE' });
+      const res = await fetch(getApiUrl(`/api/leases/${id}`), {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
       return;
@@ -288,7 +298,9 @@ export const ApiClient = {
   // ================= RENTS =================
   async getRents(month: string): Promise<RentRecord[]> {
     if (currentMode === 'live') {
-      const res = await fetch(getApiUrl(`/api/rents?month=${month}`));
+      const res = await fetch(getApiUrl(`/api/rents?month=${month}`), {
+        headers: getAuthHeaders()
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
       return json.data;
@@ -316,7 +328,7 @@ export const ApiClient = {
     if (currentMode === 'live') {
       const res = await fetch(getApiUrl('/api/rents/generate'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ month })
       });
       const json = await res.json();
@@ -362,7 +374,7 @@ export const ApiClient = {
     if (currentMode === 'live') {
       const res = await fetch(getApiUrl(`/api/rents/${id}/status`), {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ status })
       });
       const json = await res.json();
@@ -389,7 +401,9 @@ export const ApiClient = {
   // ================= DASHBOARD & RENEWALS =================
   async getDashboardSummary(): Promise<DashboardSummary> {
     if (currentMode === 'live') {
-      const res = await fetch(getApiUrl('/api/dashboard/summary'));
+      const res = await fetch(getApiUrl('/api/dashboard/summary'), {
+        headers: getAuthHeaders()
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
       return json.data;
@@ -422,7 +436,9 @@ export const ApiClient = {
 
   async getRenewals(): Promise<Lease[]> {
     if (currentMode === 'live') {
-      const res = await fetch(getApiUrl('/api/renewals'));
+      const res = await fetch(getApiUrl('/api/renewals'), {
+        headers: getAuthHeaders()
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error);
       return json.data;
@@ -544,8 +560,15 @@ export const ApiClient = {
       const formData = new FormData();
       formData.append('file', file);
 
+      const token = localStorage.getItem('leaseTracker_token');
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch(getApiUrl('/api/upload'), {
         method: 'POST',
+        headers,
         body: formData
       });
       const json = await res.json();

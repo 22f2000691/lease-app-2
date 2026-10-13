@@ -37,6 +37,7 @@ export const useLeaseStore = defineStore('leases', () => {
 
   // Check connection status
   async function checkConnectivity() {
+    apiMode.value = ApiClient.getMode();
     isBackendOnline.value = await ApiClient.checkLiveHealth();
   }
 
