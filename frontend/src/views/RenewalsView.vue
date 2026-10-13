@@ -37,7 +37,7 @@
             </div>
             <div class="info-row">
               <span class="label">Annual Escalation:</span>
-              <span class="val">+{{ l.annual_increment_percent }}%</span>
+              <span class="val">{{ formatIncrement(l) }}</span>
             </div>
             <div v-if="l.tenant_mobile" class="info-row">
               <span class="label">Tenant Phone:</span>
@@ -90,6 +90,13 @@ onMounted(async () => {
 const renewalDueLeases = computed(() =>
   store.leases.filter(l => l.status === 'Renewal Due')
 );
+
+function formatIncrement(lease: any): string {
+  if (lease.annual_increment_type === 'fixed' || (!lease.annual_increment_percent && lease.annual_increment_amount)) {
+    return `+${formatMoney(lease.annual_increment_amount)} / yr`;
+  }
+  return `+${lease.annual_increment_percent || 0}% / yr`;
+}
 </script>
 
 <style scoped>

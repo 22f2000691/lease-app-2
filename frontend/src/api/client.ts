@@ -536,5 +536,36 @@ export const ApiClient = {
         email: ''
       }
     };
+  },
+
+  // ================= DOCUMENT STORAGE =================
+  async uploadDocument(file: File): Promise<{ fileName: string; url: string }> {
+    if (currentMode === 'live') {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(getApiUrl('/api/upload'), {
+        method: 'POST',
+        body: formData
+      });
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.error || 'Document upload failed');
+      }
+      return json.data;
+    }
+
+    // Mock mode fallback: convert to Data URL
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve({
+          fileName: file.name,
+          url: reader.result as string
+        });
+      };
+      reader.onerror = () => reject(new Error('Failed to read file locally'));
+      reader.readAsDataURL(file);
+    });
   }
 };

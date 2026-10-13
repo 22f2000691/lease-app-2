@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS leases (
     end_date DATE NOT NULL,
     base_rent_amount NUMERIC(12, 2) NOT NULL CHECK (base_rent_amount >= 0),
     annual_increment_percent NUMERIC(5, 2) DEFAULT 0.00 CHECK (annual_increment_percent >= 0),
+    annual_increment_type VARCHAR(10) DEFAULT 'percent' CHECK (annual_increment_type IN ('percent', 'fixed')),
+    annual_increment_amount NUMERIC(12, 2) DEFAULT 0.00 CHECK (annual_increment_amount >= 0),
     due_day INT DEFAULT 5 CHECK (due_day BETWEEN 1 AND 28),
     manual_status VARCHAR(50) DEFAULT NULL, -- NULL (auto-calculated) | 'Active' | 'Renewal Due' | 'Expired'
     document_name VARCHAR(255),

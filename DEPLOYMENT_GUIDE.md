@@ -63,10 +63,15 @@ Deploy in this exact sequential order: **Step 1 (Supabase) $\to$ Step 2 (Cloudfl
    - Open [supabase/02_auth_roles_schema.sql](file:///home/sahil/Documents/ClientWork/lease_app_2/supabase/02_auth_roles_schema.sql), paste into Supabase, and click **Run**.
    - *This sets up the `profiles` table, auto-creates profiles on user signup, links properties to landlords, links leases to tenants via email, and enforces role-based RLS policies.*
 
-4. **(Optional) Seed Sample Data**:
+4. **Execute Annual Increment Schema SQL**:
+   - Click **New query** in the Supabase SQL editor.
+   - Open [supabase/03_annual_increment_schema.sql](file:///home/sahil/Documents/ClientWork/lease_app_2/supabase/03_annual_increment_schema.sql), paste into Supabase, and click **Run**.
+   - *This adds `annual_increment_type` ('percent' | 'fixed') and `annual_increment_amount` to support both percentage and flat rupee rent escalations.*
+
+5. **(Optional) Seed Sample Data**:
    - If you want immediate demo data, copy [supabase/seed.sql](file:///home/sahil/Documents/ClientWork/lease_app_2/supabase/seed.sql) into a new SQL query and click **Run**.
 
-4. **Verify Storage Bucket**:
+6. **Verify Storage Bucket**:
    - Go to **Storage** in the left menu.
    - Confirm a bucket named `lease-documents` exists. If not, click **New bucket**, name it `lease-documents`, and toggle **Public bucket: ON**.
 

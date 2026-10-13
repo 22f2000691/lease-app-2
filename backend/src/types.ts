@@ -39,6 +39,8 @@ export interface Lease {
   end_date: string;
   base_rent_amount: number;
   annual_increment_percent: number;
+  annual_increment_type?: 'percent' | 'fixed';
+  annual_increment_amount?: number;
   due_day: number;
   manual_status?: string | null;
   document_name?: string | null;

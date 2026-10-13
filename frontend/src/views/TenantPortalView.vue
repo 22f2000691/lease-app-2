@@ -44,7 +44,7 @@
         <div class="card-glass metric-box">
           <span class="m-label">Current Monthly Rent</span>
           <strong class="m-val">{{ formatMoney(data.lease.current_rent) }}</strong>
-          <span class="m-sub">Base ₹{{ formatMoney(data.lease.base_rent_amount) }} (+{{ data.lease.annual_increment_percent }}%/yr increment)</span>
+          <span class="m-sub">Base {{ formatMoney(data.lease.base_rent_amount) }} ({{ formatIncrement(data.lease) }} increment)</span>
         </div>
 
         <div class="card-glass metric-box">
@@ -272,11 +272,33 @@ function formatMonthName(monthStr: string) {
   }
 }
 
+function formatIncrement(lease: any): string {
+  if (!lease) return '+0%/yr';
+  if (lease.annual_increment_type === 'fixed' || (!lease.annual_increment_percent && lease.annual_increment_amount)) {
+    return `+${formatMoney(lease.annual_increment_amount)}/yr`;
+  }
+  return `+${lease.annual_increment_percent || 0}%/yr`;
+}
+
 function openAgreement() {
-  if (data.value?.lease?.document_url) {
-    window.open(data.value.lease.document_url, '_blank');
+  const url = data.value?.lease?.document_url;
+  const name = data.value?.lease?.document_name;
+  if (url) {
+    if (url.startsWith('data:')) {
+      const win = window.open();
+      if (win) {
+        win.document.write(`<iframe src="${url}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name || 'lease-agreement';
+        a.click();
+      }
+    } else {
+      window.open(url, '_blank');
+    }
   } else {
-    alert(`Attached document: "${data.value?.lease?.document_name}". Contact your landlord for a physical/cloud copy.`);
+    alert(`Attached document: "${name}". Contact your landlord for a physical/cloud copy.`);
   }
 }
 </script>

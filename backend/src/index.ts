@@ -11,6 +11,7 @@ import dashboardRoute from './routes/dashboard';
 import renewalsRoute from './routes/renewals';
 import authRoute from './routes/auth';
 import tenantRoute from './routes/tenant';
+import uploadRoute from './routes/upload';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -51,6 +52,7 @@ app.route('/api/dashboard', dashboardRoute);
 app.route('/api/renewals', renewalsRoute);
 app.route('/api/auth', authRoute);
 app.route('/api/tenant', tenantRoute);
+app.route('/api/upload', uploadRoute);
 
 // 404 Not Found Handler
 app.notFound((c) => {

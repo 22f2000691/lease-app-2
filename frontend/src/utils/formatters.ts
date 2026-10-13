@@ -37,11 +37,19 @@ export function daysBetween(dateA: string, dateB: string): number {
 }
 
 export function calculateCurrentRent(
-  lease: { start_date: string; base_rent_amount: number; annual_increment_percent: number },
+  lease: {
+    start_date: string;
+    base_rent_amount: number;
+    annual_increment_percent?: number;
+    annual_increment_type?: 'percent' | 'fixed';
+    annual_increment_amount?: number;
+  },
   targetDate: Date = new Date()
 ): number {
   const baseRent = Number(lease.base_rent_amount || 0);
+  const incType = lease.annual_increment_type || 'percent';
   const incrementPercent = Number(lease.annual_increment_percent || 0);
+  const incrementAmount = Number(lease.annual_increment_amount || 0);
   const start = new Date(lease.start_date + 'T00:00:00Z');
 
   let years = targetDate.getFullYear() - start.getFullYear();
@@ -51,8 +59,13 @@ export function calculateCurrentRent(
   }
   years = Math.max(0, years);
 
-  const compounded = baseRent * Math.pow(1 + incrementPercent / 100, years);
-  return Math.round(compounded * 100) / 100;
+  if (incType === 'fixed') {
+    const total = baseRent + (incrementAmount * years);
+    return Math.round(total * 100) / 100;
+  } else {
+    const compounded = baseRent * Math.pow(1 + incrementPercent / 100, years);
+    return Math.round(compounded * 100) / 100;
+  }
 }
 
 export function getLeaseStatus(lease: { manual_status?: string | null; end_date: string }): {

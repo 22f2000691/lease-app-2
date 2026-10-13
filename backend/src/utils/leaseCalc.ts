@@ -16,15 +16,24 @@ export function daysBetween(dateA: string, dateB: string): number {
 }
 
 /**
- * Calculates current compounded rent for a lease based on completed years since start date.
+ * Calculates current rent for a lease based on completed years since start date.
+ * Supports both percentage compounding and fixed rupee increments.
  */
 export function calculateCurrentRent(
-  lease: Pick<Lease, 'start_date' | 'base_rent_amount' | 'annual_increment_percent'> | { start_date: string; base_rent_amount: number; annual_increment_percent: number },
+  lease: {
+    start_date: string;
+    base_rent_amount: number;
+    annual_increment_percent?: number;
+    annual_increment_type?: 'percent' | 'fixed';
+    annual_increment_amount?: number;
+  },
   targetDate: Date = new Date()
 ): number {
   const startDateStr = lease.start_date;
   const baseRent = Number(lease.base_rent_amount || 0);
+  const incType = lease.annual_increment_type || 'percent';
   const incrementPercent = Number(lease.annual_increment_percent || 0);
+  const incrementAmount = Number(lease.annual_increment_amount || 0);
 
   const start = new Date(startDateStr + 'T00:00:00Z');
   let years = targetDate.getFullYear() - start.getFullYear();
@@ -34,8 +43,13 @@ export function calculateCurrentRent(
   }
   years = Math.max(0, years);
 
-  const compounded = baseRent * Math.pow(1 + incrementPercent / 100, years);
-  return Math.round(compounded * 100) / 100;
+  if (incType === 'fixed') {
+    const total = baseRent + (incrementAmount * years);
+    return Math.round(total * 100) / 100;
+  } else {
+    const compounded = baseRent * Math.pow(1 + incrementPercent / 100, years);
+    return Math.round(compounded * 100) / 100;
+  }
 }
 
 /**
@@ -70,16 +84,24 @@ export function enrichLease(lease: any): Lease {
     end_date: lease.end_date
   });
 
+  const incType = lease.annual_increment_type || 'percent';
+  const incPercent = Number(lease.annual_increment_percent || 0);
+  const incAmount = Number(lease.annual_increment_amount || 0);
+
   const currentRent = calculateCurrentRent({
     start_date: lease.start_date,
     base_rent_amount: Number(lease.base_rent_amount),
-    annual_increment_percent: Number(lease.annual_increment_percent || 0)
+    annual_increment_percent: incPercent,
+    annual_increment_type: incType,
+    annual_increment_amount: incAmount
   });
 
   return {
     ...lease,
     base_rent_amount: Number(lease.base_rent_amount),
-    annual_increment_percent: Number(lease.annual_increment_percent || 0),
+    annual_increment_percent: incPercent,
+    annual_increment_type: incType,
+    annual_increment_amount: incAmount,
     due_day: Number(lease.due_day || 5),
     current_rent: currentRent,
     status,

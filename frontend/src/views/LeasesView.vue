@@ -82,7 +82,7 @@
                 <small class="base-amount">Base: {{ formatMoney(l.base_rent_amount) }}</small>
               </td>
               <td>
-                <span class="increment-pill">+{{ l.annual_increment_percent }}% / yr</span>
+                <span class="increment-pill">{{ formatIncrement(l) }}</span>
               </td>
               <td>
                 <span class="badge" :class="getBadgeClass(l.status)">
@@ -148,7 +148,7 @@
               </div>
               <div class="mlc-stat-col mlc-align-right">
                 <span class="mlc-label">Escalation</span>
-                <span class="increment-pill">+{{ l.annual_increment_percent }}% / yr</span>
+                <span class="increment-pill">{{ formatIncrement(l) }}</span>
               </div>
             </div>
 
@@ -224,9 +224,28 @@ function getBadgeClass(status?: string) {
   return 'badge-expired';
 }
 
+function formatIncrement(lease: any): string {
+  if (lease.annual_increment_type === 'fixed' || (!lease.annual_increment_percent && lease.annual_increment_amount)) {
+    return `+${formatMoney(lease.annual_increment_amount)} / yr`;
+  }
+  return `+${lease.annual_increment_percent || 0}% / yr`;
+}
+
 function openDoc(lease: any) {
   if (lease.document_url) {
-    window.open(lease.document_url, '_blank');
+    if (lease.document_url.startsWith('data:')) {
+      const win = window.open();
+      if (win) {
+        win.document.write(`<iframe src="${lease.document_url}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+      } else {
+        const a = document.createElement('a');
+        a.href = lease.document_url;
+        a.download = lease.document_name || 'lease-document';
+        a.click();
+      }
+    } else {
+      window.open(lease.document_url, '_blank');
+    }
   } else {
     alert(`Document "${lease.document_name}" is attached to this record.`);
   }

@@ -239,6 +239,10 @@ export const useLeaseStore = defineStore('leases', () => {
     ]);
   }
 
+  async function uploadDocument(file: File) {
+    return await ApiClient.uploadDocument(file);
+  }
+
   return {
     properties,
     leases,
@@ -263,6 +267,7 @@ export const useLeaseStore = defineStore('leases', () => {
     loadLeases,
     saveLease,
     removeLease,
+    uploadDocument,
     loadRents,
     generateMonthlyRents,
     toggleRentStatus,

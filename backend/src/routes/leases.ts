@@ -85,6 +85,8 @@ leasesRoute.post('/', async (c) => {
       end_date,
       base_rent_amount,
       annual_increment_percent,
+      annual_increment_type,
+      annual_increment_amount,
       due_day,
       manual_status,
       document_name,
@@ -113,27 +115,48 @@ leasesRoute.post('/', async (c) => {
       }
     }
 
-    const { data, error } = await supabase
+    const incType = annual_increment_type === 'fixed' ? 'fixed' : 'percent';
+    const incAmount = Number(annual_increment_amount || 0);
+    const incPercent = Number(annual_increment_percent || 0);
+
+    const insertPayload: any = {
+      property_id,
+      shop_name: shop_name.trim(),
+      tenant_name: tenant_name.trim(),
+      tenant_email: tenant_email ? tenant_email.trim() : null,
+      tenant_user_id: tenant_user_id,
+      tenant_mobile: tenant_mobile ? tenant_mobile.trim() : null,
+      tenant_address: tenant_address.trim(),
+      start_date,
+      end_date,
+      base_rent_amount: Number(base_rent_amount),
+      annual_increment_percent: incPercent,
+      annual_increment_type: incType,
+      annual_increment_amount: incAmount,
+      due_day: Number(due_day || 5),
+      manual_status: manual_status || null,
+      document_name: document_name || null,
+      document_url: document_url || null
+    };
+
+    let { data, error } = await supabase
       .from('leases')
-      .insert([{
-        property_id,
-        shop_name: shop_name.trim(),
-        tenant_name: tenant_name.trim(),
-        tenant_email: tenant_email ? tenant_email.trim() : null,
-        tenant_user_id: tenant_user_id,
-        tenant_mobile: tenant_mobile ? tenant_mobile.trim() : null,
-        tenant_address: tenant_address.trim(),
-        start_date,
-        end_date,
-        base_rent_amount: Number(base_rent_amount),
-        annual_increment_percent: Number(annual_increment_percent || 0),
-        due_day: Number(due_day || 5),
-        manual_status: manual_status || null,
-        document_name: document_name || null,
-        document_url: document_url || null
-      }])
+      .insert([insertPayload])
       .select('*, property:properties(id, name, address)')
       .single();
+
+    // Graceful fallback if columns have not yet been migrated in Supabase
+    if (error && (error.code === '42703' || error.message.includes('annual_increment_'))) {
+      delete insertPayload.annual_increment_type;
+      delete insertPayload.annual_increment_amount;
+      const retry = await supabase
+        .from('leases')
+        .insert([insertPayload])
+        .select('*, property:properties(id, name, address)')
+        .single();
+      data = retry.data ? { ...retry.data, annual_increment_type: incType, annual_increment_amount: incAmount } : null;
+      error = retry.error;
+    }
 
     if (error) {
       return c.json({ success: false, error: error.message }, 500);
@@ -161,6 +184,8 @@ leasesRoute.put('/:id', async (c) => {
       end_date,
       base_rent_amount,
       annual_increment_percent,
+      annual_increment_type,
+      annual_increment_amount,
       due_day,
       manual_status,
       document_name,
@@ -187,28 +212,45 @@ leasesRoute.put('/:id', async (c) => {
       }
     }
 
-    const { data, error } = await supabase
+    const updatePayload: any = {
+      ...(property_id && { property_id }),
+      ...(shop_name && { shop_name: shop_name.trim() }),
+      ...(tenant_name && { tenant_name: tenant_name.trim() }),
+      ...(tenant_email !== undefined && { tenant_email: tenant_email ? tenant_email.trim() : null }),
+      ...(tenant_user_id !== undefined && { tenant_user_id }),
+      ...(tenant_mobile !== undefined && { tenant_mobile: tenant_mobile ? tenant_mobile.trim() : null }),
+      ...(tenant_address && { tenant_address: tenant_address.trim() }),
+      ...(start_date && { start_date }),
+      ...(end_date && { end_date }),
+      ...(base_rent_amount !== undefined && { base_rent_amount: Number(base_rent_amount) }),
+      ...(annual_increment_percent !== undefined && { annual_increment_percent: Number(annual_increment_percent) }),
+      ...(annual_increment_type !== undefined && { annual_increment_type }),
+      ...(annual_increment_amount !== undefined && { annual_increment_amount: Number(annual_increment_amount) }),
+      ...(due_day !== undefined && { due_day: Number(due_day) }),
+      manual_status: manual_status || null,
+      ...(document_name !== undefined && { document_name: document_name || null }),
+      ...(document_url !== undefined && { document_url: document_url || null })
+    };
+
+    let { data, error } = await supabase
       .from('leases')
-      .update({
-        ...(property_id && { property_id }),
-        ...(shop_name && { shop_name: shop_name.trim() }),
-        ...(tenant_name && { tenant_name: tenant_name.trim() }),
-        ...(tenant_email !== undefined && { tenant_email: tenant_email ? tenant_email.trim() : null }),
-        ...(tenant_user_id !== undefined && { tenant_user_id }),
-        ...(tenant_mobile !== undefined && { tenant_mobile: tenant_mobile ? tenant_mobile.trim() : null }),
-        ...(tenant_address && { tenant_address: tenant_address.trim() }),
-        ...(start_date && { start_date }),
-        ...(end_date && { end_date }),
-        ...(base_rent_amount !== undefined && { base_rent_amount: Number(base_rent_amount) }),
-        ...(annual_increment_percent !== undefined && { annual_increment_percent: Number(annual_increment_percent) }),
-        ...(due_day !== undefined && { due_day: Number(due_day) }),
-        manual_status: manual_status || null,
-        ...(document_name !== undefined && { document_name: document_name || null }),
-        ...(document_url !== undefined && { document_url: document_url || null })
-      })
+      .update(updatePayload)
       .eq('id', id)
       .select('*, property:properties(id, name, address)')
       .single();
+
+    if (error && (error.code === '42703' || error.message.includes('annual_increment_'))) {
+      delete updatePayload.annual_increment_type;
+      delete updatePayload.annual_increment_amount;
+      const retry = await supabase
+        .from('leases')
+        .update(updatePayload)
+        .eq('id', id)
+        .select('*, property:properties(id, name, address)')
+        .single();
+      data = retry.data ? { ...retry.data, annual_increment_type, annual_increment_amount } : null;
+      error = retry.error;
+    }
 
     if (error) {
       return c.json({ success: false, error: error.message }, 500);
