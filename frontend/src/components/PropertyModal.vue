@@ -14,7 +14,7 @@
           v-model="name"
           type="text"
           class="input-control"
-          placeholder="e.g. City Centre Complex, Fancy Bazar"
+          placeholder="Property or building name"
           required
         />
       </div>
@@ -27,7 +27,7 @@
           type="number"
           min="0"
           class="input-control"
-          placeholder="e.g. 12"
+          placeholder="Number of units"
         />
       </div>
 
@@ -37,7 +37,7 @@
           id="propAddress"
           v-model="address"
           class="input-control"
-          placeholder="Complete street address, area, pin code..."
+          placeholder="Complete street address, area, pin code"
           rows="3"
           required
         ></textarea>
@@ -88,7 +88,7 @@ watch(
       } else {
         name.value = '';
         address.value = '';
-        totalUnits.value = 1;
+        totalUnits.value = 0;
       }
     }
   }

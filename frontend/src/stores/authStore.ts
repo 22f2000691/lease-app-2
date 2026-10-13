@@ -84,11 +84,11 @@ export const useAuthStore = defineStore('auth', () => {
   function loginAsDemo(role: 'landlord' | 'tenant') {
     if (role === 'landlord') {
       setSession('demo-landlord-token', DEMO_LANDLORD);
-      notify.addToast('Logged in as Rajiv Goswami (Landlord Demo)', 'success');
+      notify.addToast('Signed in as Demo Landlord', 'success');
       return DEMO_LANDLORD;
     } else {
       setSession('demo-tenant-token', DEMO_TENANT);
-      notify.addToast('Logged in as Priyanka Das (Tenant Demo)', 'success');
+      notify.addToast('Signed in as Demo Tenant', 'success');
       return DEMO_TENANT;
     }
   }

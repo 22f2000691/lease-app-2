@@ -15,7 +15,7 @@
           v-model="form.tenant_name"
           type="text"
           class="input-control"
-          placeholder="e.g. Rajesh Sharma"
+          placeholder="Tenant full name"
           required
         />
       </div>
@@ -27,7 +27,7 @@
           v-model="form.tenant_mobile"
           type="tel"
           class="input-control"
-          placeholder="e.g. +91 98765 43210"
+          placeholder="Mobile number"
         />
       </div>
 
@@ -38,7 +38,7 @@
           v-model="form.tenant_email"
           type="email"
           class="input-control"
-          placeholder="e.g. tenant@domain.com"
+          placeholder="Tenant email address"
         />
       </div>
 
@@ -48,7 +48,7 @@
           id="tenantAddress"
           v-model="form.tenant_address"
           class="input-control"
-          placeholder="Tenant permanent address or registered office..."
+          placeholder="Tenant permanent address or registered office"
           rows="2"
           required
         ></textarea>
@@ -77,7 +77,7 @@
           v-model="form.shop_name"
           type="text"
           class="input-control"
-          placeholder="e.g. Shop 101 - Apex Electronics"
+          placeholder="Shop number or unit name"
           required
         />
       </div>
@@ -115,7 +115,7 @@
           step="0.01"
           min="0"
           class="input-control"
-          placeholder="e.g. 35000"
+          placeholder="Monthly rent amount"
           required
         />
       </div>
@@ -129,7 +129,7 @@
           step="0.1"
           min="0"
           class="input-control"
-          placeholder="e.g. 10.0"
+          placeholder="Annual increment %"
         />
       </div>
 
@@ -142,7 +142,7 @@
           min="1"
           max="28"
           class="input-control"
-          placeholder="e.g. 5"
+          placeholder="Day of month (1–28)"
         />
       </div>
 
@@ -240,9 +240,9 @@ const form = ref({
   tenant_address: '',
   start_date: getTodayISO(),
   end_date: '',
-  base_rent_amount: 25000,
-  annual_increment_percent: 5,
-  due_day: 5,
+  base_rent_amount: 0,
+  annual_increment_percent: 0,
+  due_day: 1,
   manual_status: null as string | null
 });
 
@@ -283,9 +283,9 @@ watch(
           tenant_address: '',
           start_date: start.toISOString().slice(0, 10),
           end_date: end.toISOString().slice(0, 10),
-          base_rent_amount: 30000,
-          annual_increment_percent: 5,
-          due_day: 5,
+          base_rent_amount: 0,
+          annual_increment_percent: 0,
+          due_day: 1,
           manual_status: null
         };
         fileName.value = '';

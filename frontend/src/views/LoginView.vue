@@ -15,7 +15,7 @@
             <span>👑 Landlord Demo (Property Owner)</span>
           </button>
           <button type="button" class="btn btn-light demo-btn" @click="handleDemo('tenant')">
-            <span>🏪 Tenant Demo (Cafe Mocha)</span>
+            <span>🏪 Tenant Demo</span>
           </button>
         </div>
       </div>
@@ -32,7 +32,7 @@
             v-model="email"
             type="email"
             class="input-control"
-            placeholder="e.g. landlord@demo.com"
+            placeholder="Email address"
             required
           />
         </div>

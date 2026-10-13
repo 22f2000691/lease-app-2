@@ -37,17 +37,17 @@ const expiredDateISO = expiredDate.toISOString().slice(0, 10);
 
 export const DEMO_LANDLORD: UserProfile = {
   id: 'user-landlord-1',
-  email: 'landlord@demo.com',
-  full_name: 'Rajiv Goswami (Property Owner)',
-  phone: '+91 98640 11223',
+  email: 'demo.landlord@example.com',
+  full_name: 'Demo Landlord',
+  phone: '',
   role: 'landlord'
 };
 
 export const DEMO_TENANT: UserProfile = {
   id: 'user-tenant-1',
-  email: 'priyanka@cafemocha.com',
-  full_name: 'Priyanka Das (Cafe Mocha)',
-  phone: '+91 98540 12345',
+  email: 'demo.tenant@example.com',
+  full_name: 'Demo Tenant',
+  phone: '',
   role: 'tenant'
 };
 

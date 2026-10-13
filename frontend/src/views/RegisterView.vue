@@ -45,7 +45,7 @@
             v-model="fullName"
             type="text"
             class="input-control"
-            placeholder="e.g. Rajiv Goswami or Cafe Mocha"
+            placeholder="Your full name"
             required
           />
         </div>
@@ -57,7 +57,7 @@
             v-model="email"
             type="email"
             class="input-control"
-            placeholder="e.g. name@company.com"
+            placeholder="Email address"
             required
           />
         </div>
@@ -69,7 +69,7 @@
             v-model="phone"
             type="tel"
             class="input-control"
-            placeholder="e.g. +91 98765 43210"
+            placeholder="Phone number"
           />
         </div>
 
@@ -80,7 +80,7 @@
             v-model="password"
             type="password"
             class="input-control"
-            placeholder="At least 6 characters"
+            placeholder="Password (min 6 characters)"
             minlength="6"
             required
           />
