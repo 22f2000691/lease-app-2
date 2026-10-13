@@ -10,9 +10,9 @@ import {
 
 const STORAGE_KEYS = {
   MODE: 'leaseTracker_apiMode',
-  PROPERTIES: 'leaseTracker_properties_v2',
-  LEASES: 'leaseTracker_leases_v2',
-  RENTS: 'leaseTracker_rents_v2'
+  PROPERTIES: 'leaseTracker_properties_v3',
+  LEASES: 'leaseTracker_leases_v3',
+  RENTS: 'leaseTracker_rents_v3'
 };
 
 class LocalMockStorage {
@@ -527,9 +527,9 @@ export const ApiClient = {
       daysRemaining: myLease?.days_remaining || 0,
       currentMonthInvoice,
       landlordContact: {
-        name: 'Rajiv Goswami (Estate Manager)',
-        phone: '+91 98640 11223',
-        email: 'management@citycentre.in'
+        name: '',
+        phone: '',
+        email: ''
       }
     };
   }
