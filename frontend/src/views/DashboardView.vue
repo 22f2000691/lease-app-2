@@ -64,7 +64,8 @@
           <router-link to="/leases" class="view-all-link">View All Leases →</router-link>
         </div>
 
-        <div class="table-container">
+        <!-- Desktop Table -->
+        <div class="table-container desktop-table">
           <table class="modern-table">
             <thead>
               <tr>
@@ -98,6 +99,24 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Recent Leases Card List -->
+        <div class="mobile-card-list">
+          <div v-for="l in recentLeases" :key="l.id" class="mobile-recent-lease card-glass">
+            <div class="mrl-top">
+              <div>
+                <strong class="mrl-tenant">{{ l.tenant_name }}</strong>
+                <span class="shop-pill">{{ l.property?.name || 'Property' }} • {{ l.shop_name }}</span>
+              </div>
+              <span class="badge" :class="getBadgeClass(l.status)">{{ l.status }}</span>
+            </div>
+            <div class="mrl-info">
+              <strong class="money-cell">{{ formatMoney(l.current_rent) }}</strong>
+              <span class="mrl-date">Expires {{ formatDate(l.end_date) }}</span>
+            </div>
+          </div>
+          <div v-if="recentLeases.length === 0" class="empty-state">No lease agreements found.</div>
         </div>
       </div>
 
@@ -367,6 +386,44 @@ function getBadgeClass(status?: string) {
   margin-bottom: 4px;
 }
 
+/* Mobile Recent Leases */
+.mobile-recent-lease {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.mrl-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mrl-tenant {
+  font-size: 14.5px;
+  color: var(--text-main);
+  display: block;
+}
+
+.mrl-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+}
+
+.mrl-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 @media (max-width: 1200px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -379,6 +436,23 @@ function getBadgeClass(status?: string) {
 @media (max-width: 640px) {
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+  .collection-bar-card {
+    padding: 16px;
+  }
+  .bar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .content-card {
+    padding: 16px;
+  }
+  .alert-actions {
+    flex-direction: column;
+  }
+  .alert-actions .btn {
+    width: 100%;
   }
 }
 </style>

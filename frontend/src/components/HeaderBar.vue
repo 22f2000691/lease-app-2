@@ -8,15 +8,16 @@
     <div class="header-actions">
       <div class="connection-badge" :class="store.apiMode === 'live' ? 'conn-live' : 'conn-mock'">
         <span class="pulse-dot"></span>
-        <span>{{ store.apiMode === 'live' ? 'Connected: Cloudflare Edge + Supabase' : 'Running: Local Mock Store' }}</span>
+        <span class="badge-text-desktop">{{ store.apiMode === 'live' ? 'Connected: Cloudflare Edge + Supabase' : 'Running: Local Mock Store' }}</span>
+        <span class="badge-text-mobile">{{ store.apiMode === 'live' ? 'Live' : 'Demo' }}</span>
       </div>
 
-      <button class="btn btn-light" @click="store.openAddProperty()">
+      <button class="btn btn-light desktop-only" @click="store.openAddProperty()">
         <Plus :size="16" />
         <span>Add Property</span>
       </button>
 
-      <button class="btn btn-primary" @click="store.openAddLease()">
+      <button class="btn btn-primary desktop-only" @click="store.openAddLease()">
         <Plus :size="16" />
         <span>Add Lease</span>
       </button>
@@ -114,14 +115,36 @@ const store = useLeaseStore();
   100% { transform: scale(0.95); opacity: 0.8; }
 }
 
+.badge-text-mobile {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .header-bar {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .page-subtitle {
+    font-size: 12px;
   }
   .header-actions {
-    width: 100%;
-    justify-content: flex-start;
+    width: auto;
+    justify-content: flex-end;
+  }
+  .badge-text-desktop {
+    display: none;
+  }
+  .badge-text-mobile {
+    display: inline;
+  }
+  .connection-badge {
+    padding: 5px 10px;
+    font-size: 11px;
   }
 }
 </style>

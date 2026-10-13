@@ -130,7 +130,7 @@ const renewalDueLeases = computed(() =>
 
 .renewals-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
 }
 
@@ -254,5 +254,28 @@ const renewalDueLeases = computed(() =>
 .empty-renewals-box p {
   color: var(--text-muted);
   font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .renewals-card {
+    padding: 16px;
+  }
+  .card-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .renewals-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .renewal-item-card {
+    padding: 16px;
+  }
+  .card-footer-actions {
+    flex-direction: column;
+  }
+  .card-footer-actions .btn {
+    width: 100%;
+  }
 }
 </style>

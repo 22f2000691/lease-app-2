@@ -39,8 +39,8 @@
         </div>
       </div>
 
-      <!-- Data Table -->
-      <div class="table-container">
+      <!-- Desktop Data Table -->
+      <div class="table-container desktop-table">
         <table class="modern-table">
           <thead>
             <tr>
@@ -123,6 +123,72 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Touch-friendly Card List -->
+      <div class="mobile-card-list">
+        <div v-for="l in store.leases" :key="l.id" class="mobile-lease-card card-glass">
+          <div class="mlc-header">
+            <div>
+              <strong class="mlc-tenant-name">{{ l.tenant_name }}</strong>
+              <div class="mlc-prop-tag">{{ l.property?.name || 'Property' }} • {{ l.shop_name }}</div>
+            </div>
+            <div class="mlc-status">
+              <span class="badge" :class="getBadgeClass(l.status)">{{ l.status }}</span>
+              <div v-if="l.status === 'Renewal Due'" class="days-hint">{{ l.days_remaining }}d left</div>
+            </div>
+          </div>
+
+          <div class="mlc-body">
+            <div class="mlc-stat-row">
+              <div class="mlc-stat-col">
+                <span class="mlc-label">Current Rent</span>
+                <strong class="mlc-rent">{{ formatMoney(l.current_rent) }}</strong>
+                <small class="base-amount">Base: {{ formatMoney(l.base_rent_amount) }}</small>
+              </div>
+              <div class="mlc-stat-col mlc-align-right">
+                <span class="mlc-label">Escalation</span>
+                <span class="increment-pill">+{{ l.annual_increment_percent }}% / yr</span>
+              </div>
+            </div>
+
+            <div class="mlc-info-row">
+              <span class="mlc-label">Lease Term:</span>
+              <span class="mlc-term">{{ formatDate(l.start_date) }} → {{ formatDate(l.end_date) }}</span>
+            </div>
+
+            <div v-if="l.tenant_mobile" class="mlc-info-row">
+              <span class="mlc-label">Phone:</span>
+              <a :href="'tel:' + l.tenant_mobile" class="tenant-phone">
+                <Phone :size="13" />
+                <span>{{ l.tenant_mobile }}</span>
+              </a>
+            </div>
+
+            <div v-if="l.document_name" class="mlc-info-row">
+              <span class="mlc-label">Document:</span>
+              <button class="btn btn-sm btn-light doc-btn" @click="openDoc(l)">
+                <FileText :size="13" />
+                <span class="doc-text">{{ l.document_name }}</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="mlc-actions">
+            <button class="btn btn-sm btn-light mlc-btn" @click="store.openEditLease(l)">
+              <Edit3 :size="14" />
+              <span>Edit</span>
+            </button>
+            <button class="btn btn-sm btn-danger mlc-btn" @click="store.removeLease(l.id)">
+              <Trash2 :size="14" />
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="store.leases.length === 0" class="empty-state">
+          No leases matching your search query or status filter.
+        </div>
       </div>
     </div>
   </div>
@@ -338,5 +404,129 @@ function openDoc(lease: any) {
   text-align: center;
   padding: 40px 16px;
   color: var(--text-muted);
+}
+
+/* Mobile Lease Cards */
+.mobile-lease-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.mlc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mlc-tenant-name {
+  font-size: 15px;
+  color: var(--text-main);
+  display: block;
+}
+
+.mlc-prop-tag {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.mlc-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.mlc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.mlc-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.mlc-stat-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mlc-align-right {
+  align-items: flex-end;
+}
+
+.mlc-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.mlc-rent {
+  font-size: 16px;
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.mlc-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.mlc-term {
+  font-weight: 600;
+  color: #334155;
+}
+
+.mlc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.mlc-btn {
+  flex: 1;
+  min-height: 40px;
+}
+
+@media (max-width: 640px) {
+  .leases-card {
+    padding: 16px;
+  }
+  .card-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .card-toolbar button {
+    width: 100%;
+  }
+  .filter-bar {
+    flex-direction: column;
+  }
+  .search-box {
+    width: 100%;
+    min-width: 0;
+  }
+  .filter-controls, .filter-select {
+    width: 100%;
+  }
 }
 </style>

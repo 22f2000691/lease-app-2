@@ -12,7 +12,8 @@
         </button>
       </div>
 
-      <div class="table-container">
+      <!-- Desktop Table -->
+      <div class="table-container desktop-table">
         <table class="modern-table">
           <thead>
             <tr>
@@ -60,6 +61,42 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Touch-friendly Property Cards -->
+      <div class="mobile-card-list">
+        <div v-for="p in store.properties" :key="p.id" class="mobile-prop-card card-glass">
+          <div class="mpc-header">
+            <div class="prop-name-box">
+              <Building2 :size="18" class="prop-icon" />
+              <strong class="mpc-title">{{ p.name }}</strong>
+            </div>
+            <span class="units-badge">{{ p.total_units || 0 }} Units</span>
+          </div>
+
+          <p class="mpc-address">{{ p.address }}</p>
+
+          <div class="mpc-meta">
+            <span class="active-leases-count">
+              {{ countActiveLeases(p.id) }} Active Leases
+            </span>
+          </div>
+
+          <div class="mpc-actions">
+            <button class="btn btn-sm btn-light mpc-btn" @click="store.openEditProperty(p)">
+              <Edit3 :size="14" />
+              <span>Edit</span>
+            </button>
+            <button class="btn btn-sm btn-danger mpc-btn" @click="store.removeProperty(p.id)">
+              <Trash2 :size="14" />
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="store.properties.length === 0" class="empty-state">
+          No properties registered yet. Click "+ Add Property" to begin.
+        </div>
       </div>
     </div>
   </div>
@@ -152,5 +189,62 @@ function countActiveLeases(propertyId: string): number {
   text-align: center;
   padding: 40px 16px;
   color: var(--text-muted);
+}
+
+/* Mobile Property Cards */
+.mobile-prop-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.mpc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.mpc-title {
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.mpc-address {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.mpc-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mpc-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.mpc-btn {
+  flex: 1;
+  min-height: 40px;
+}
+
+@media (max-width: 640px) {
+  .properties-card {
+    padding: 16px;
+  }
+  .card-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .card-toolbar button {
+    width: 100%;
+  }
 }
 </style>

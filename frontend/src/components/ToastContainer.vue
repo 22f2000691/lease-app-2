@@ -125,4 +125,13 @@ const store = useNotificationStore();
   opacity: 0;
   transform: translateX(30px);
 }
+
+@media (max-width: 768px) {
+  .toast-stack {
+    bottom: calc(76px + env(safe-area-inset-bottom, 16px));
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+}
 </style>

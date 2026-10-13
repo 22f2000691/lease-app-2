@@ -71,4 +71,13 @@ defineProps<{
   margin-top: 6px;
   font-weight: 500;
 }
+
+@media (max-width: 640px) {
+  .stat-card {
+    padding: 16px 18px;
+  }
+  .stat-value {
+    font-size: 24px;
+  }
+}
 </style>

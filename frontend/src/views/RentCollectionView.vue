@@ -50,8 +50,8 @@
         </div>
       </div>
 
-      <!-- Invoices Table -->
-      <div class="table-container">
+      <!-- Desktop Invoices Table -->
+      <div class="table-container desktop-table">
         <table class="modern-table">
           <thead>
             <tr>
@@ -125,6 +125,65 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Touch-friendly Rent Cards -->
+      <div class="mobile-card-list">
+        <div v-for="r in store.rents" :key="r.id" class="mobile-rent-card card-glass">
+          <div class="mrc-header">
+            <div>
+              <strong class="mrc-tenant">{{ r.lease?.tenant_name || 'Tenant' }}</strong>
+              <div class="mrc-sub">{{ r.lease?.property?.name || 'Property' }} • {{ r.lease?.shop_name || 'Unit' }}</div>
+            </div>
+            <span class="badge" :class="getBadgeClass(r.status)">{{ r.status }}</span>
+          </div>
+
+          <div class="mrc-body">
+            <div class="mrc-row">
+              <span class="mrc-label">Amount Due:</span>
+              <strong class="mrc-amount">{{ formatMoney(r.amount) }}</strong>
+            </div>
+            <div class="mrc-row">
+              <span class="mrc-label">Due Date:</span>
+              <span :class="{ 'overdue-date': r.status === 'Overdue' }">{{ formatDate(r.due_date) }}</span>
+            </div>
+            <div v-if="r.paid_date" class="mrc-row">
+              <span class="mrc-label">Settled On:</span>
+              <span class="paid-date-chip">✓ {{ formatDate(r.paid_date) }}</span>
+            </div>
+            <div v-if="r.lease?.tenant_mobile" class="mrc-row">
+              <span class="mrc-label">Tenant Phone:</span>
+              <a :href="'tel:' + r.lease.tenant_mobile" class="mrc-phone">{{ r.lease.tenant_mobile }}</a>
+            </div>
+          </div>
+
+          <div class="mrc-actions">
+            <button
+              v-if="r.status === 'Paid'"
+              class="btn btn-sm btn-light mrc-action-btn"
+              @click="store.toggleRentStatus(r)"
+            >
+              <RotateCcw :size="14" />
+              <span>Undo Payment</span>
+            </button>
+            <button
+              v-else
+              class="btn btn-sm btn-primary mrc-action-btn"
+              @click="store.toggleRentStatus(r)"
+            >
+              <CheckCircle2 :size="15" />
+              <span>Mark Rent as Paid</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="store.rents.length === 0" class="empty-state">
+          <Receipt :size="32" class="empty-icon" />
+          <p>No rent invoices recorded for {{ store.selectedMonth }}.</p>
+          <button class="btn btn-sm btn-primary mt-2" @click="store.generateMonthlyRents()">
+            Generate Current Lease Rent Now
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -321,12 +380,118 @@ function getBadgeClass(status: string) {
   margin-top: 12px;
 }
 
-@media (max-width: 768px) {
+/* Mobile Rent Card Styles */
+.mobile-rent-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.mrc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mrc-tenant {
+  font-size: 15px;
+  color: var(--text-main);
+  display: block;
+}
+
+.mrc-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.mrc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.mrc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.mrc-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.mrc-amount {
+  font-size: 16px;
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.mrc-phone {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.mrc-phone:hover {
+  text-decoration: underline;
+}
+
+.mrc-actions {
+  display: flex;
+}
+
+.mrc-action-btn {
+  width: 100%;
+  min-height: 42px;
+}
+
+@media (max-width: 640px) {
+  .rent-card {
+    padding: 16px;
+  }
+  .card-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .month-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .month-picker-wrap {
+    width: 100%;
+  }
+  .month-input {
+    width: 100%;
+  }
+  .month-actions .btn {
+    width: 100%;
+  }
   .metric-divider {
     display: none;
   }
   .month-metrics {
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    padding: 14px;
+  }
+  .metric-block {
+    align-items: flex-start;
   }
 }
 </style>

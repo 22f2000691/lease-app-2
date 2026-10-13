@@ -138,7 +138,8 @@
           </div>
         </div>
 
-        <div class="table-container">
+        <!-- Desktop Invoice Table -->
+        <div class="table-container desktop-table">
           <table class="modern-table">
             <thead>
               <tr>
@@ -180,6 +181,38 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Touch-friendly Tenant Invoice Cards -->
+        <div class="mobile-card-list">
+          <div v-for="r in data.rents" :key="r.id" class="mobile-tenant-rent-card card-glass">
+            <div class="mtr-header">
+              <strong class="mtr-month">{{ formatMonthName(r.month) }}</strong>
+              <span class="badge" :class="getRentBadge(r.status)">{{ r.status }}</span>
+            </div>
+            <div class="mtr-body">
+              <div class="mtr-row">
+                <span class="mtr-label">Rent Amount:</span>
+                <strong class="mtr-val">{{ formatMoney(r.amount) }}</strong>
+              </div>
+              <div class="mtr-row">
+                <span class="mtr-label">Due Date:</span>
+                <span>{{ formatDate(r.due_date) }}</span>
+              </div>
+              <div v-if="r.paid_date" class="mtr-row">
+                <span class="mtr-label">Payment Date:</span>
+                <span class="paid-chip">✓ {{ formatDate(r.paid_date) }}</span>
+              </div>
+              <div v-if="r.notes" class="mtr-row">
+                <span class="mtr-label">Reference:</span>
+                <span class="receipt-note">{{ r.notes }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="data.rents.length === 0" class="empty-state">
+            No rent billing invoices generated for this unit yet.
+          </div>
         </div>
       </div>
     </div>
@@ -512,15 +545,104 @@ function openAgreement() {
   color: var(--text-muted);
 }
 
+/* Mobile Tenant Rent Cards */
+.mobile-tenant-rent-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+}
+
+.mtr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.mtr-month {
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.mtr-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.mtr-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+
+.mtr-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.mtr-val {
+  font-size: 15px;
+  color: var(--text-main);
+  font-weight: 800;
+}
+
 @media (max-width: 900px) {
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   .two-box-row {
     grid-template-columns: 1fr;
   }
   .status-badge-wrap {
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .hero-card {
+    padding: 18px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .hero-main {
+    width: 100%;
+  }
+  .property-title {
+    font-size: 18px;
+  }
+  .landlord-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .landlord-actions .btn {
+    width: 100%;
+  }
+  .doc-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .doc-container .btn {
+    width: 100%;
+  }
+  .section-box {
+    padding: 16px;
   }
 }
 </style>

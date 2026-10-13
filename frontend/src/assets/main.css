@@ -175,8 +175,9 @@ body {
   color: #be123c;
 }
 .btn-sm {
-  font-size: 12px;
-  padding: 6px 11px;
+  font-size: 12.5px;
+  padding: 6px 12px;
+  min-height: 36px;
   border-radius: var(--radius-sm);
 }
 
@@ -303,7 +304,19 @@ textarea.input-control {
   animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Responsive Breakpoints */
+/* Responsive Breakpoints & Mobile Utilities */
+.mobile-only {
+  display: none !important;
+}
+
+.desktop-only {
+  display: inherit;
+}
+
+.mobile-card-list {
+  display: none;
+}
+
 @media (max-width: 1024px) {
   .main-content {
     margin-left: 80px;
@@ -311,11 +324,39 @@ textarea.input-control {
 }
 
 @media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: inherit !important;
+  }
+  .desktop-table {
+    display: none !important;
+  }
+  .mobile-card-list {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+
   .main-content {
     margin-left: 0;
-    padding-bottom: 70px;
+    padding-bottom: calc(75px + env(safe-area-inset-bottom, 20px));
   }
   .content-body {
-    padding: 18px 16px 80px;
+    padding: 16px 14px calc(85px + env(safe-area-inset-bottom, 20px));
+  }
+
+  /* Form controls font-size 16px to prevent iOS auto-zoom */
+  .input-control, select.input-control, textarea.input-control {
+    font-size: 16px;
+  }
+
+  /* Touch-friendly buttons on mobile */
+  .btn {
+    min-height: 42px;
+  }
+  .btn-sm {
+    min-height: 38px;
   }
 }

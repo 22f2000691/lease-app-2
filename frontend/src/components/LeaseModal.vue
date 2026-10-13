@@ -446,6 +446,11 @@ async function handleSubmit() {
 @media (max-width: 680px) {
   .lease-form-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .calc-body {
+    flex-direction: column;
+    gap: 8px;
   }
 }
 </style>

@@ -137,4 +137,33 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown));
   opacity: 0;
   transform: scale(0.96);
 }
+
+@media (max-width: 640px) {
+  .modal-backdrop {
+    padding: 8px;
+    align-items: flex-end;
+  }
+  .modal-dialog {
+    max-height: 94vh;
+    border-radius: var(--radius-lg);
+  }
+  .modal-header {
+    padding: 16px;
+  }
+  .modal-title {
+    font-size: 17px;
+  }
+  .modal-body {
+    padding: 16px;
+  }
+  .modal-footer {
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  .modal-footer :deep(button),
+  .modal-footer :deep(.btn) {
+    width: 100%;
+  }
+}
 </style>

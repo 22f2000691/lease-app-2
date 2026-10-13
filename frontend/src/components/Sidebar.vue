@@ -14,29 +14,34 @@
       <template v-if="auth.isLandlord">
         <router-link to="/" class="nav-item" active-class="active">
           <LayoutDashboard :size="18" />
-          <span>Dashboard</span>
+          <span class="nav-label-desktop">Dashboard</span>
+          <span class="nav-label-mobile">Dashboard</span>
         </router-link>
 
         <router-link to="/properties" class="nav-item" active-class="active">
           <Building2 :size="18" />
-          <span>Properties / Locations</span>
+          <span class="nav-label-desktop">Properties / Locations</span>
+          <span class="nav-label-mobile">Properties</span>
           <span v-if="propertiesCount > 0" class="nav-pill">{{ propertiesCount }}</span>
         </router-link>
 
         <router-link to="/leases" class="nav-item" active-class="active">
           <FileText :size="18" />
-          <span>Tenants & Leases</span>
+          <span class="nav-label-desktop">Tenants & Leases</span>
+          <span class="nav-label-mobile">Leases</span>
           <span v-if="activeLeasesCount > 0" class="nav-pill">{{ activeLeasesCount }}</span>
         </router-link>
 
         <router-link to="/rent-collection" class="nav-item" active-class="active">
           <IndianRupee :size="18" />
-          <span>Monthly Collection</span>
+          <span class="nav-label-desktop">Monthly Collection</span>
+          <span class="nav-label-mobile">Collection</span>
         </router-link>
 
         <router-link to="/renewals" class="nav-item" active-class="active">
           <ClockAlert :size="18" />
-          <span>Upcoming Renewals</span>
+          <span class="nav-label-desktop">Upcoming Renewals</span>
+          <span class="nav-label-mobile">Renewals</span>
           <span v-if="renewalsCount > 0" class="nav-pill alert-pill">{{ renewalsCount }}</span>
         </router-link>
       </template>
@@ -45,9 +50,16 @@
       <template v-else>
         <router-link to="/tenant-portal" class="nav-item" active-class="active">
           <Store :size="18" />
-          <span>My Lease & Unit</span>
+          <span class="nav-label-desktop">My Lease & Unit</span>
+          <span class="nav-label-mobile">My Lease</span>
         </router-link>
       </template>
+
+      <!-- Mobile Sign Out Button -->
+      <button class="nav-item nav-logout-mobile" title="Sign Out" @click="handleLogout">
+        <LogOut :size="18" />
+        <span>Logout</span>
+      </button>
     </nav>
 
     <!-- Sidebar Footer with User Profile & Logout -->
@@ -333,6 +345,10 @@ function handleLogout() {
   text-decoration: underline;
 }
 
+.nav-label-mobile, .nav-logout-mobile {
+  display: none;
+}
+
 @media (max-width: 1024px) {
   .sidebar {
     width: 80px;
@@ -363,11 +379,14 @@ function handleLogout() {
   .sidebar {
     inset: auto 0 0 0;
     width: 100%;
-    height: 65px;
+    height: calc(62px + env(safe-area-inset-bottom, 0px));
     flex-direction: row;
-    padding: 6px 12px;
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
     border-right: none;
     border-top: 1px solid var(--sidebar-border);
+    background: rgba(11, 21, 45, 0.98);
+    backdrop-filter: blur(12px);
+    z-index: 50;
   }
   .brand, .sidebar-footer {
     display: none;
@@ -375,16 +394,47 @@ function handleLogout() {
   .nav-menu {
     flex-direction: row;
     justify-content: space-around;
+    align-items: center;
     width: 100%;
+    gap: 2px;
   }
   .nav-item {
     flex-direction: column;
-    gap: 4px;
-    padding: 8px;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 2px;
     font-size: 10px;
+    flex: 1;
+    min-width: 0;
+    border-radius: var(--radius-sm);
   }
   .nav-item span {
     display: block;
+    font-size: 9.5px;
+    font-weight: 600;
+    line-height: 1.1;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nav-label-desktop {
+    display: none !important;
+  }
+  .nav-label-mobile {
+    display: block !important;
+  }
+  .nav-logout-mobile {
+    display: flex !important;
+    color: #f87171 !important;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .nav-pill {
+    display: none !important;
   }
 }
 </style>
